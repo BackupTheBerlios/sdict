@@ -1,0 +1,5 @@
+search=/usr/share/dict
+search=/usr/local/share/dict
+search=~/.dict
+
+cachedir=~/.dict

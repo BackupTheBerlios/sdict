@@ -1,0 +1,14 @@
+1. Add application menu with function of hot-keys.
+2. Port to WinCE.
+3. Add ability to edit configuration file.
+4. Add to stardict.tcl ability to search words with wild chars.
+5. Add hot key (and, later, menu item, see 1) to view info about
+   loaded dictionaries.
+6. Add select/deselect on fly dictionaries on which perform
+   word search. For example, if you have many loaded dictionaries
+   and you want search word in only few dicts, not all.
+7. Add to stardict.tcl ability to create directory for cache files.
+8. Write documentation for stardict.tcl, which may use as separated
+   package in another applications.
+9. Make standalone executable - application and Tcl/Tk in one 
+   package (FreeWrap?). 

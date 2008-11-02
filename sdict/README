@@ -1,0 +1,33 @@
+ABOUT:
+Sdict dictionary application.
+
+REQUIREMENTS:
+Primary requirement is Tcl/Tk distiribution. Depending of your OS
+fetch one of:
+Tcl/Tk >= 8.4 (www.tcl.tk) (most suited for unix users)
+ActiveTcl >= 8.4 (www.activestate.com) (for Windows users)
+eTcl >= 8.4 (www.evolane.com) (if you want install on WinCE)
+Please note, Tcl come in with many major Unix/Linux distribution,
+just check you own package repository and install it.
+
+INSTALLATION:
+On Unix:
+First, check out that Tcl/Tk install on your system: just type tclsh
+on command prompt. If you put to Tcl shell with prompt sign %, when
+type: info tclversion and check installed Tcl version.
+Next, unpack sdict sources and cd to:
+	$ tar -zxf sdict-0.1.tar.gz
+	$ cd sdict-0.1
+Sdict, by default, installed under /usr/local. If it is not suit then 
+open Makefile with your favourite editor and change PREFIX variable
+to your directory. Depending on directory in PREFIX you may need
+root access to install Sdict. Suppose, PREFIX is /usr/local then
+become root and type:
+	# make install
+
+On Windows:
+
+LINKS:
+Home site: sdict.berlios.de
+StarDict: stardict.sourceforge.net
+Describing of StarDict's dictionary format: see doc/DICTFILE_FORMAT
