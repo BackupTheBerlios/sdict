@@ -23,6 +23,11 @@ array set win {}
 set history {}
 set hisptr  0
 
+# Try get rcfile from environment variable
+if { [info exists env(SDICTRC)] } {
+  set config(rcfile) $env(SDICTRC)
+}
+
 # Parsing command line arguments
 set state skip
 foreach arg $argv {
@@ -98,7 +103,8 @@ proc putsWord { word {bookname {}} } {
 
   array set result [stardict get $word $bookname]
   foreach d [lsort [array names result]] {
-    Console -bold "$d:\n"
+    Console -bold "$d: "
+    Console -italic "$word\n"
     Console "$result($d)"
   }
 }
@@ -115,7 +121,7 @@ proc Console { args } {
   }
 
   if { $config(nogui) } {
-    puts stdout $msg
+    puts -nonewline stdout $msg
     return
   }
   $win(text) configure -state normal
@@ -208,7 +214,7 @@ if { [llength $config(words)] || $config(showdicts) \
 # Show names of founded dictionaries and quit
 if { $config(showdicts) } {
   foreach n [lsort [stardict names]] { 
-    Console "$n" 
+    Console "$n\n" 
   }
   exit 0
 }
@@ -216,12 +222,12 @@ if { $config(showdicts) } {
 # Create cache
 if { $config(cachequit) || $config(createcache) } {
   foreach n [getbooks] {
-    Console "Read book: $n"
+    Console "Read book: $n\n"
     if { [catch {stardict open -nocache $n} err] } {
       puts stderr $err
       continue
     }
-    Console "Generating cache for book: $n"
+    Console "Generating cache for book: $n\n"
     stardict createcache $n
   }
   if { $config(cachequit) } { exit 0 }
@@ -271,6 +277,7 @@ bind $win(entry) <Prior>	[list $win(text) yview scroll -1 pages]
 
 # Setting up text styles
 $win(text) tag configure bold -font [list $config(font) 10 bold]
+$win(text) tag configure italic -font [list $config(font) 10 italic]
 $win(text) tag configure darkblue -foreground darkblue
 $win(text) tag configure red -foreground red
 
