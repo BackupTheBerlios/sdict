@@ -12,7 +12,7 @@ just check you own package repository and install it.
 
 INSTALLATION:
 On Unix:
-First, check out that Tcl/Tk install on your system: just type tclsh
+First, check out that Tcl/Tk installed on your system: just type tclsh
 on command prompt. If you put to Tcl shell with prompt sign %, when
 type: info tclversion and check installed Tcl version.
 Next, unpack sdict sources and cd to:
@@ -24,10 +24,75 @@ to your directory. Depending on directory in PREFIX you may need
 root access to install Sdict. Suppose, PREFIX is /usr/local then
 become root and type:
 	# make install
+Next, you need StarDict dictionary, fetch one of many from StarDict
+page. Create directory .dict in your home directory:
+	$ mkdir ~/.dict
+Unpack and copy dictionary files to this directory. And finally,
+copy file sdictrc.sample from source distribution to home:
+	$ cp sdictrc.sample ~/.sdictrc
 
 On Windows:
+Fetch and install Tcl/Tk, I recommended ActiveTcl, but you may try
+another distribution like WinTcl (not tested).
+Also, if you need, fetch dictionaries from StarDict page and unpack
+it to somewhere (for example, C:\DictCache).
+Unpack Sdict source archive to (for example, C:\Sdict) and rename
+sdictrc.sample to sdictrc, then edit sdictrc such as:
+	search=C:\DictCache
+	cachedir=C:\DictCache
+Next, open command line session, cd to C:\Sdict and type:
+	C:\Sdict> tclsh sdict.tcl -cq
+After, successful generating cache files, you may launch Sdict by
+double-clicking to sdict.tcl (only, if you Tcl distribution link
+.tcl extension with tclsh).
+
+CONFIGURATION:
+Sdict controlled by configuration file: sdictrc. By default, it must
+be located in your home directory, but there are few ways to point
+another locate configuration:
+1. By environment variable SDICTRC
+2. By command line option -rc
+Configuration options founded in sdictrc:
+search 	(required)
+	point to directory where search dictionaries, your may
+	define as many directories as you want in search options.
+	By default:
+	search=/usr/share/dict
+	search=/usr/local/share/dict
+	search=~/.dict
+
+cachedir (required)
+	point to directory where located cache files, it directory
+	must be exists, create one yourself if it not exists.
+	By default:
+	cachedir=~/.dict
+font	(optional)
+	use font for output text.
+	By default:
+	font=fixed
+fontsize (optional)
+	size of font for output text.
+	By default:
+	fontsize=10
+
+COMMAND LINE:
+-d	show dictionary names and exit
+-c	create cache files (see below)
+-cq	create cache files and exit (see below)
+-rc	use another config file
+-b	use only selected dictionary, it may be enumarated by comma
+other arguments treated as words, Sdict translate words, output to
+console and exit.
+
+CACHE:
+To improve speed up Sdict, you must create dictionary cache. In case
+of using new dictionary, first of all create cache by command:
+	$ sdict -c 	<- create caches for all dictionaries
+or:
+	$ sdict -d		<- find dict in output which you want
+	$ sdict -cq -b dict 	<- where dict for cache building
 
 LINKS:
 Home site: sdict.berlios.de
-StarDict: stardict.sourceforge.net
+StarDict and dictionaries: stardict.sourceforge.net
 Describing of StarDict's dictionary format: see doc/DICTFILE_FORMAT
