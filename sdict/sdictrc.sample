@@ -1,5 +1,14 @@
+# sdictrc configuration file for Sdict
+
+# Directories in which search dictionaries
 search=/usr/share/dict
 search=/usr/local/share/dict
 search=~/.dict
 
+# Cache directory store dictionary cache.
+# It must be exists.
 cachedir=~/.dict
+
+# GUI options
+#font=fixed
+#fontsize=10
