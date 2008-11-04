@@ -10,6 +10,11 @@ proc ABORT { msg } {
   exit 1
 }
 
+proc ABORT_WIN { msg } {
+  tk_messageBox -title Error -icon error -type ok -message "$msg"
+  exit 1
+}
+
 # Global variables
 array set config {
   createcache	0
@@ -18,6 +23,7 @@ array set config {
   words		{}
   rcfile	""
   font		fixed
+  fontsize  	10
 }
 array set win {}
 set history {}
@@ -60,6 +66,11 @@ switch $tcl_platform(platform) {
     }
   }
   windows {
+    if { $config(rcfile) == "" } {
+      set config(rcfile) [join [list [file dirname [info script]] sdictrc] [file separator]]
+    }
+    rename ABORT ABORT_OLD
+    rename ABORT_WIN ABORT
   }
 }
 
@@ -78,6 +89,14 @@ proc configOpen {} {
       cachedir {
         set config(cachedir) [lindex $tok 1]
       }
+      fontsize {
+        set size [lindex $tok 1]
+        if { ![string is integer $size] } {
+          ABORT "fontsize is not integer"
+        }
+        set config(fontsize) $size
+      }
+      font { set config(font) [lindex $tok 1] }
     }
   }
   if { ![info exists config(searchdir)] } {
@@ -200,7 +219,6 @@ proc rollhistory { dir } {
 
 ##################################################################
 namespace import stardict::stardict
-if {[catch {configOpen} err]} { ABORT $err }
 
 # Select appropriate stream to output messages
 if { [llength $config(words)] || $config(showdicts) \
@@ -210,6 +228,8 @@ if { [llength $config(words)] || $config(showdicts) \
   package require Tk
   set config(nogui) 0 
 }
+
+if {[catch {configOpen} err]} { ABORT $err }
 
 # Show names of founded dictionaries and quit
 if { $config(showdicts) } {
@@ -257,7 +277,7 @@ option add *HighlightThickness 0
 pack [set win(entry) [entry $win(root).e -textvariable win(word)]] \
 	-side top -fill x
 pack [set f [frame $win(root).f]] -fill both -expand yes
-set win(text) [text $f.t -font $config(font)  \
+set win(text) [text $f.t -font [list $config(font) $config(fontsize)]  \
 	-yscrollcommand [list $f.sy set]]
 set win(scry) [scrollbar $f.sy -takefocus 0 \
 	-command [list $win(text) yview]]
@@ -276,8 +296,8 @@ bind $win(entry) <Next>		[list $win(text) yview scroll 1 pages]
 bind $win(entry) <Prior>	[list $win(text) yview scroll -1 pages]
 
 # Setting up text styles
-$win(text) tag configure bold -font [list $config(font) 10 bold]
-$win(text) tag configure italic -font [list $config(font) 10 italic]
+$win(text) tag configure bold -font [list $config(font) $config(fontsize) bold]
+$win(text) tag configure italic -font [list $config(font) $config(fontsize) italic]
 $win(text) tag configure darkblue -foreground darkblue
 $win(text) tag configure red -foreground red
 
