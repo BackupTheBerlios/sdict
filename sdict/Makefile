@@ -22,7 +22,7 @@ build:
 	fi
 	$(RM) $(APPNAME)
 	@echo "#!/bin/sh" >> $(APPNAME)
-	@echo "cd $(LIBPATH) && $(TCLSH) sdict.tcl" >> $(APPNAME)
+	@echo "cd $(LIBPATH) && $(TCLSH) sdict.tcl $$@" >> $(APPNAME)
 	@chmod 755 $(APPNAME)
 
 install-bin:
