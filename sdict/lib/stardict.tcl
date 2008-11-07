@@ -438,7 +438,7 @@ proc ::stardict::datachunk {bookname offset size} {
 proc ::stardict::searchfor { data bookname } {
   variable words
 
-  set in [string index $data 0]
+  set in [string index [set data [string trim $data]] 0]
   upvar 0 words($bookname,$in) wolist
 
   set len	[llength $wolist]
