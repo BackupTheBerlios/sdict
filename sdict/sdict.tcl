@@ -165,6 +165,9 @@ proc getbooks {} {
 proc guisearch {} {
   global win history hisptr
 
+  if { ! [string length $win(word)] } {
+    return
+  }
   putsWord $win(word)
   lappend history $win(word)
   set hisptr -1
