@@ -3,11 +3,14 @@ APPNAME=sdict
 PREFIX=/usr/local
 BINPATH=$(PREFIX)/bin
 LIBPATH=$(PREFIX)/lib/$(APPNAME)-$(VERSION)
+PKGPATH=$(LIBPATH)/lib
 DOCPATH=$(PREFIX)/share/doc/$(APPNAME)-$(VERSION)
+DOCS=README sdictrc.sample
 TCLSH=tclsh
 
 ############################################################
 RM		= rm -f
+RMDIR		= rmdir
 INSTALL		= /usr/bin/install
 INSTALL_DATA	= $(INSTALL) -m 644
 INSTALL_PRG	= $(INSTALL) -m 755
@@ -27,14 +30,14 @@ build:
 
 install-bin:
 	$(INSTALL) -d $(LIBPATH)/lib
-	$(INSTALL_DATA) lib/*.tcl $(LIBPATH)/lib
+	$(INSTALL_DATA) lib/pkgIndex.tcl $(PKGPATH)
+	$(INSTALL_DATA) lib/stardict.tcl $(PKGPATH)
 	$(INSTALL_DATA) sdict.tcl $(LIBPATH)
 	$(INSTALL_PRG) -m 755 sdict $(BINPATH)
 
 install-doc:
 	$(INSTALL) -d $(DOCPATH)
-	$(INSTALL_DATA) README $(DOCPATH)
-	$(INSTALL_DATA) sdictrc.sample $(DOCPATH)
+	for n in $(DOCS); do $(INSTALL_DATA) $$n $(DOCPATH); done
 
 clean:
 	$(RM) $(APPNAME)
@@ -44,5 +47,8 @@ dist: clean
 
 uninstall:
 	$(RM) $(BINPATH)/$(APPNAME)
-	$(RM) -r $(LIBPATH)
-	$(RM) -r $(DOCPATH)
+	$(RM) $(PKGPATH)/pkgIndex.tcl
+	$(RM) $(PKGPATH)/stardict.tcl
+	$(RM) $(LIBPATH)/sdict.tcl
+	for n in $(DOCS); do $(RM) $(DOCPATH)/$$n; done
+	$(RMDIR) $(DOCPATH) $(PKGPATH) $(LIBPATH)
