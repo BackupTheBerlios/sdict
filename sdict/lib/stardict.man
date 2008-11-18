@@ -1,0 +1,109 @@
+[comment {-*- tcl -*- stardict manpage}]
+[manpage_begin stardict n 0.1]
+[copyright {2008, Skorobogatko Oleksiy <skorobogatko@meta.ua>}]
+[moddesc {Interface to StarDict dictionary}]
+[titledesc {Implementation of query StarDict dictionary}]
+[require Tcl 8.4]
+[description]
+[para]
+
+This is an implementation in pure Tcl interface to query
+StarDict dictionary.
+
+[section {COMMANDS}]
+
+[list_begin definitions]
+
+[call [cmd {::stardict::stardict setup}] \
+	[opt "-cachedir [arg dir]"] [arg arg]]
+
+Given command do search dictionaries in directories passed
+by list [arg arg]. Each directory in list [arg arg] scanning for
+StarDict .ifo (dictionary information) files and load them. 
+If no ifo files found or not valid format, then error generated. 
+Option [opt "-cachedir [arg dir]"] specify
+directory which keep cache files produced by 
+[cmd {::stardict::stardict createcache}]. Be aware, it directory
+must exists.
+
+[call [cmd {::stardict::stardict names}]]
+
+Return list of dictionary booknames. Bookname(s) supplied as
+arguments to other commands.
+
+[call [cmd {::stardict::stardict open}] \
+	[opt {-usecache}] [opt {-nocache}] [arg bookname]]
+
+Load dictionary words index. Option [opt {-usecache}] load cache
+(if it exists or been created by 
+[cmd {::stardict::stardict createcache}] before) rather than original
+StarDict dictionary index. This behaviour by default, because it
+provide load speed improvement. Against, [opt {-nocache}] totally
+skip dictionary cache and load StarDict dictionary index (very
+slow, be aware). 
+
+[call [cmd {::stardict::stardict createcache}] [arg bookname]]
+
+Build words cache. Delete old one and create new. Keep results
+in cache directory. Argument [arg bookname] is name of dictionary.
+
+[call [cmd {::stardict::stardict close}] [opt [arg booknames]]]
+Close dictionary. Argument [arg booknames] is list or name of
+dictionary. This argument is optional in this case all dictionary
+would be close.
+
+[call [cmd {::stardict::stardict get}] [arg data] \
+	[opt [arg booknames]]]
+
+Get word [arg data] from dictionary [arg booknames]. [arg booknames]
+list or name of dictionary. If no [arg booknames] then word
+[arg data] searches in all loaded dictionaries.
+
+[call [cmd {::stardict::stardict info}]  \
+	[opt [arg -isload]]	\
+	[opt [arg -ifo]]	\
+	[opt [arg -idx]]	\
+	[opt [arg -dict]]	\
+	[opt [arg -cache]]	\
+	[opt [arg -iscached]]	\
+	[opt [arg -files]]	\
+	[arg bookname]]
+
+Retrieve various information about dictionary [arg bookname].
+[list_begin definitions]
+[def [arg -isload]]
+Check is dictionary loaded
+[def [arg -ifo]]
+Return name of dictionary information .ifo file
+[def [arg -idx]]
+Return name of dictionary index .idx file
+[def [arg -dict]]
+Return name of dictionary data .dict file
+[def [arg -cache]]
+Return name of dictionary cache
+[def [arg -iscached]]
+Check is dictionary cached. Please note, that actual only if
+dictionary already open by [cmd {::stardict::stardict open}]
+[def [arg -files]]
+Return list of files related to dictionary
+[list_end]
+
+[list_end]
+
+[section {EXAMPLES}]
+[example {
+	package require stardict
+	namespace import stardict::stardict
+
+	stardict setup -cachedir /var/cache/dict \
+		{/usr/share/dict /usr/local/dict /usr/local/stardict}
+
+	set n [stardict names]
+
+	stardict open [lindex $n 0]
+	stardict get bla-bla-bla
+
+	stardict close
+}]
+
+[manpage_end]
