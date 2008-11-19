@@ -25,6 +25,8 @@ Option [opt "-cachedir [arg dir]"] specify
 directory which keep cache files produced by 
 [cmd {::stardict::stardict createcache}]. Be aware, it directory
 must exists.
+[para]
+This command must be first.
 
 [call [cmd {::stardict::stardict names}]]
 
@@ -58,6 +60,7 @@ would be close.
 Get word [arg data] from dictionary [arg booknames]. [arg booknames]
 list or name of dictionary. If no [arg booknames] then word
 [arg data] searches in all loaded dictionaries.
+Result is array, where array index is bookname and item is results.
 
 [call [cmd {::stardict::stardict info}]  \
 	[opt [arg -isload]]	\
@@ -90,6 +93,19 @@ Return list of files related to dictionary
 
 [list_end]
 
+[section {LIMITATION AND PERFORMANCE}]
+Please note, support only dictionaries with version number 2.4.2
+and sametypesquence=m. For checking this, see appropriate .ifo
+file. Also, not yet support for compressed dictionary, you need
+before unpack all dictionary files (.idx and .dict) by [cmd gunzip].
+[para]
+Strongly recommended use cache files. By default,
+[cmd {::stardict::stardict open}] reading cache rather than index.
+To build caches, open dictionary by above command and create cache
+with [cmd {::stardict::stardict createcache}]. Reading plain index
+file is VERY-VERY slow, be aware! Cache files not portable between
+OSes, for each OS you need build particular cache.
+
 [section {EXAMPLES}]
 [example {
 	package require stardict
@@ -101,7 +117,7 @@ Return list of files related to dictionary
 	set n [stardict names]
 
 	stardict open [lindex $n 0]
-	stardict get bla-bla-bla
+	puts [stardict get bla-bla-bla]
 
 	stardict close
 }]
