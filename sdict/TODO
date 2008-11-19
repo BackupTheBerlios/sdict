@@ -13,5 +13,5 @@
 9. Make standalone executable - application and Tcl/Tk in one 
    package (FreeWrap?). 
 10. Implement command 'dump' to stardict package for dumping dictionary.
-11. Add target to Makefile to create stardict package index.
-12. Add target to Makefile generate stardict package documentation.
+11. (DONE) Add target to Makefile to create stardict package index.
+12. (DONE) Add target to Makefile generate stardict package documentation.

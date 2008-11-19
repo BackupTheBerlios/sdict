@@ -5,7 +5,7 @@ BINPATH=$(PREFIX)/bin
 LIBPATH=$(PREFIX)/lib/$(APPNAME)-$(VERSION)
 PKGPATH=$(LIBPATH)/lib
 DOCPATH=$(PREFIX)/share/doc/$(APPNAME)-$(VERSION)
-DOCS=README sdictrc.sample
+DOCS=README sdictrc.sample stardict.html
 TCLSH=tclsh
 
 ############################################################
@@ -16,17 +16,24 @@ INSTALL_DATA	= $(INSTALL) -m 644
 INSTALL_PRG	= $(INSTALL) -m 755
 
 ############################################################
-install: build install-bin install-doc
+install: check-tcl build install-bin install-doc
 	
 build:
-	@if ! `which $(TCLSH) >/dev/null 2>&1` ; then 	\
-		echo "$(TCLSH): not found";	\
-		exit 1;				\
-	fi
 	$(RM) $(APPNAME)
 	@echo "#!/bin/sh" >> $(APPNAME)
 	@echo "cd $(LIBPATH) && $(TCLSH) sdict.tcl $$@" >> $(APPNAME)
 	@chmod 755 $(APPNAME)
+
+check-tcl:
+	@if ! `which $(TCLSH) >/dev/null 2>&1` ; then	\
+		echo "$(TCLSH): not found";	\
+		exit 1;				\
+	fi
+
+# Generate pkgIndex file and package doc in html format
+tcl-pkg: check-tcl
+	( cd lib && echo "pkg_mkIndex . stardict.tcl" | $(TCLSH) )
+	dtplite -o doc html lib/stardict.man
 
 install-bin:
 	$(INSTALL) -d $(LIBPATH)/lib
