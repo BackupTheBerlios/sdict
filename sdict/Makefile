@@ -5,7 +5,7 @@ BINPATH=$(PREFIX)/bin
 LIBPATH=$(PREFIX)/lib/$(APPNAME)-$(VERSION)
 PKGPATH=$(LIBPATH)/lib
 DOCPATH=$(PREFIX)/share/doc/$(APPNAME)-$(VERSION)
-DOCS=README sdictrc.sample stardict.html
+DOCS=README sdictrc.sample doc/stardict.html
 TCLSH=tclsh
 
 ############################################################
@@ -21,7 +21,7 @@ install: check-tcl build install-bin install-doc
 build:
 	$(RM) $(APPNAME)
 	@echo "#!/bin/sh" >> $(APPNAME)
-	@echo "cd $(LIBPATH) && $(TCLSH) sdict.tcl $$@" >> $(APPNAME)
+	@echo "cd $(LIBPATH) && $(TCLSH) sdict.tcl \$$@" >> $(APPNAME)
 	@chmod 755 $(APPNAME)
 
 check-tcl:
