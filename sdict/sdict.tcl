@@ -128,6 +128,38 @@ proc putsWord { word {bookname {}} } {
   }
 }
 
+proc GenerateCache {} {
+  global config win
+
+  if { ! $config(nogui) } { $win(entry) configure -state disable }
+  foreach n [getbooks] {
+    Console "Read book: $n\n"
+    if { ! $config(nogui) } { update idletasks }
+    if { [catch {stardict open -nocache $n} err] } {
+      puts stderr $err
+      continue
+    }
+    Console "Generating cache for book: $n\n"
+    if { ! $config(nogui) } { update idletasks }
+    stardict createcache $n
+  }
+  if { ! $config(nogui) } { $win(entry) configure -state normal }
+}
+
+proc SoftGenerateCache {} {
+  foreach n [getbooks] {
+    if { [stardict info -isload $n] && \
+    	! [stardict info -iscached $n] } {
+      Console -darkblue "$n: no cache, generating\n"
+      update idletasks
+      stardict createcache $n
+      Console -darkblue "$n: done\n"
+    } else {
+      Console -red "$n: cache exists: [stardict info -cache $n]\n"
+    }
+  }
+}
+
 proc Console { args } {
   global config win
 
@@ -150,6 +182,7 @@ proc Console { args } {
     $win(text) insert end $msg $style
   }
   $win(text) configure -state disabled
+  $win(text) yview end
 }
 
 proc getbooks {} {
@@ -159,6 +192,12 @@ proc getbooks {} {
     return [split $config(booknames) ,]
   } else {
     return [stardict names]
+  }
+}
+
+proc showdicts {} {
+  foreach n [lsort [stardict names]] { 
+    Console "$n\n" 
   }
 }
 
@@ -172,7 +211,6 @@ proc guisearch {} {
   lappend history $win(word)
   set hisptr -1
   $win(entry) delete 0 end
-  $win(text) yview end
 }
 
 proc guihelp {} {
@@ -186,7 +224,6 @@ proc guihelp {} {
   Console "Up/Down\t\thistory up/down\n"
   Console "PgUp/PgDown\tscroll output\n"
   Console "Esc\t\tclear input\n"
-  $win(text) yview end
 }
 
 proc guiclearoutput {} {
@@ -228,6 +265,7 @@ if { [llength $config(words)] || $config(showdicts) \
 	|| $config(cachequit) } {
   set config(nogui) 1
 } else { 
+  set argv {}; # Disable further argment processing by Tk package
   package require Tk
   set config(nogui) 0 
 }
@@ -235,26 +273,10 @@ if { [llength $config(words)] || $config(showdicts) \
 if {[catch {configOpen} err]} { ABORT $err }
 
 # Show names of founded dictionaries and quit
-if { $config(showdicts) } {
-  foreach n [lsort [stardict names]] { 
-    Console "$n\n" 
-  }
-  exit 0
-}
+if { $config(showdicts) } { showdicts; exit 0 }
 
-# Create cache
-if { $config(cachequit) || $config(createcache) } {
-  foreach n [getbooks] {
-    Console "Read book: $n\n"
-    if { [catch {stardict open -nocache $n} err] } {
-      puts stderr $err
-      continue
-    }
-    Console "Generating cache for book: $n\n"
-    stardict createcache $n
-  }
-  if { $config(cachequit) } { exit 0 }
-}
+# Create cache and quit
+if { $config(cachequit) } { GenerateCache; exit 0 }
 
 # Translate words from command line and quit
 if { $config(nogui) } {
@@ -277,8 +299,22 @@ wm geometry $win(root) 210x250
 option add *BorderWidth 1
 option add *HighlightThickness 0
 
-pack [set win(entry) [entry $win(root).e -textvariable win(word)]] \
-	-side top -fill x
+# Setting up input field and two buttons: for translate and menu
+pack [set f [frame $win(root).top]] -fill x -side top
+button $f.b1 -text "<" -padx 1 -pady 1 -command guisearch
+set mb [menubutton $f.b2 -text "M" -direction below -relief raised \
+	-padx 2 -pady 2]
+menu $mb.m -tearoff 0
+$mb.m add command -label "Dictionaries" -command showdicts
+$mb.m add command -label "Clear output" -command guiclearoutput
+$mb.m add command -label "Cache dict" -command SoftGenerateCache
+$mb.m add command -label "Help" -command guihelp
+$mb.m add command -label "Quit" -command guiquit
+$mb configure -menu $mb.m
+set win(entry) [entry $f.e -textvariable win(word)]
+pack $f.b2 $f.b1 -side right 
+pack $win(entry) -side left -fill x -expand yes
+
 pack [set f [frame $win(root).f]] -fill both -expand yes
 set win(text) [text $f.t -font [list $config(font) $config(fontsize)]  \
 	-yscrollcommand [list $f.sy set]]
@@ -306,11 +342,15 @@ $win(text) tag configure red -foreground red
 
 focus -force $win(entry)
 $win(text) configure -state disabled
+tkwait visibility $win(text)
 update idletasks
 
+if { $config(createcache) } { GenerateCache }
+
+Console "Loading dictionary:\n"
 foreach n [getbooks] {
   if {[catch {stardict open $n} err]} {
-    Console -red $err
+    Console -red "$err\n"
   } else { Console -darkblue "$n\n" }
   update idletasks
 }
