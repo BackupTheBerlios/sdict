@@ -91,6 +91,14 @@ dictionary already open by [cmd {::stardict::stardict open}]
 Return list of files related to dictionary
 [list_end]
 
+[para]
+[call [cmd {::stardict::stardict lasterr}]]
+
+Return warning message of last executed procedures: 
+[cmd {::stardict::stardict setup}], [cmd {::stardict::stardict get}].
+Be sure, [cmd {::stardict::stardict get}] return list of 
+messages, not a message string.
+
 [list_end]
 
 [section {LIMITATION AND PERFORMANCE}]

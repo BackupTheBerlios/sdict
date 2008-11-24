@@ -17,6 +17,10 @@ namespace eval ::stardict {
 
     variable	config
     array set	config {}
+    
+    # Buffer for warning messages
+    variable	lasterr
+    set 	lasterr {}
 
 }
 
@@ -60,6 +64,7 @@ proc ::stardict::stardict {cmd args} {
 
 proc ::stardict::stardict_cmd_setup {args} {
   variable 	config
+  variable	lasterr
 
   set path 	{}
   set state 	none
@@ -103,10 +108,9 @@ proc ::stardict::stardict_cmd_setup {args} {
   }
 
   # Load founded ifo files.
+  set lasterr {}
   foreach ifo $files {
-    if {[catch {loadifo $ifo} err]} {
-      puts stderr $err
-    }
+    if {[catch {loadifo $ifo} err]} { set lasterr $err }
   }
 
 }
@@ -332,7 +336,7 @@ proc ::stardict::stardict_cmd_open { args } {
   # Try to load cache 
   set f [stardict info -cache $bookname]
   if {$opt == "usecache" && ([file exists $f] && [file readable $f])} {
-    if {![catch {cacheload $bookname}]} {
+    if { ![catch {cacheload $bookname}] } {
       return 1
     }
   }
@@ -400,6 +404,8 @@ proc ::stardict::check_bookname { bookname } {
   if {[lsearch [stardict names] $bookname] == -1} {
     return -code error "no such dictionary: $bookname"
   }
+  # Suited for "if" contidionals
+  return 1
 }
 
 # ::stardict::stardict_cmd_close --
@@ -435,13 +441,30 @@ proc ::stardict::datachunk {bookname offset size} {
   return [encoding convertfrom utf-8 "$out"]
 }
 
+# ::stardict::searchfor
+#
+# Search engine, based on binary search.
+#
+# Arguments:
+#
+#	data		search data (word)
+#	bookname	name of dictionary
+#
+# Results:
+#	Return string related this data, else
+# empty string if data not found.
+
 proc ::stardict::searchfor { data bookname } {
   variable words
 
   set in [string index [set data [string trim $data]] 0]
   upvar 0 words($bookname,$in) wolist
 
-  set len	[llength $wolist]
+  # Exit, if not appropriate book for searching word
+  # Also, this skip message to lasterr variable in stardict_cmd_get
+  if { [catch {set len [llength $wolist]}] } {
+    return {}
+  }
   set leftpos 	0
   set rightpos	$len
   set currpos	[expr $len / 2]
@@ -492,21 +515,37 @@ proc ::stardict::searchfor { data bookname } {
 
 proc ::stardict::stardict_cmd_get { data {booknames {}} } {
   variable dict
+  variable lasterr
 
   array set result {}
   if {![llength $booknames]} {
     set booknames [stardict names]
   }
+  set lasterr {}
   foreach b $booknames {
-    if [stardict info -isload $b] {
-      if {![catch {set out [searchfor $data $b]}]} {
+    if { [stardict info -isload $b] } {
+      if { ![catch {set out [searchfor $data $b]} err] } {
         set result($b) $out
       } else {
         set result($b) {}
+	lappend lasterr $err
       }
     }
   }
   return [array get result]
+}
+
+# ::stardict::stardict_cmd_lasterr
+# 
+# Warning message of last executed procedure:
+# stardict_cmd_setup
+# stardict_cmd_get
+#
+
+proc ::stardict::stardict_cmd_lasterr {} {
+  variable lasterr
+
+  return $lasterr
 }
 
 # ::stardict::stardict_cmd_info --
@@ -529,7 +568,9 @@ proc ::stardict::stardict_cmd_get { data {booknames {}} } {
 
 proc ::stardict::stardict_cmd_info {opt bookname} {
   variable dict
+  variable lasterr 
 
+  check_bookname $bookname
   switch -exact -- $opt {
     "-isload" {
       return $dict($bookname,isload)
