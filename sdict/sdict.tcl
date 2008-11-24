@@ -117,6 +117,12 @@ proc guiquit {} {
   stardict close
 }
 
+proc putsWarn {} {
+  if { [llength [stardict lasterr]] } { 
+    foreach m [stardict lasterr] { Console -red "$m\n" }
+  }
+}
+
 proc putsWord { word {bookname {}} } {
   global config
 
@@ -126,6 +132,7 @@ proc putsWord { word {bookname {}} } {
     Console -italic "$word\n"
     Console "$result($d)"
   }
+  putsWarn
 }
 
 proc GenerateCache {} {
@@ -146,6 +153,7 @@ proc GenerateCache {} {
   if { ! $config(nogui) } { $win(entry) configure -state normal }
 }
 
+# Generate cache for dictionaries which have not one
 proc SoftGenerateCache {} {
   foreach n [getbooks] {
     if { [stardict info -isload $n] && \
@@ -347,6 +355,7 @@ update idletasks
 
 if { $config(createcache) } { GenerateCache }
 
+putsWarn
 Console "Loading dictionary:\n"
 foreach n [getbooks] {
   if {[catch {stardict open $n} err]} {
