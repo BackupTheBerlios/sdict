@@ -10,5 +10,7 @@ search=~/.dict
 cachedir=~/.dict
 
 # GUI options
+# Available fonts are:
+# fixed, times, courier, helvetica
 #font=fixed
 #fontsize=10
