@@ -110,7 +110,7 @@ proc ::stardict::stardict_cmd_setup {args} {
   # Load founded ifo files.
   set lasterr {}
   foreach ifo $files {
-    if {[catch {loadifo $ifo} err]} { set lasterr $err }
+    if {[catch {loadifo $ifo} err]} { lappend lasterr $err }
   }
 
 }
@@ -568,7 +568,6 @@ proc ::stardict::stardict_cmd_lasterr {} {
 
 proc ::stardict::stardict_cmd_info {opt bookname} {
   variable dict
-  variable lasterr 
 
   check_bookname $bookname
   switch -exact -- $opt {
