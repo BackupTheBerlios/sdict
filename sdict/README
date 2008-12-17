@@ -46,6 +46,21 @@ After, successful generating cache files, you may launch Sdict by
 double-clicking to sdict.tcl (only, if you Tcl distribution link
 .tcl extension with tclsh).
 
+Notes about Windows CE (Smartphones, PocketPC):
+To install on WinCE device, you need fetch and install Evolane
+Tcl/Tk distribution (www.evolane.com).
+Unpack on PC host sdict archive and edit sdictrc to suit path
+directories relatively to WinCE device (please note, on WinCE no
+volumes (C:\, D:\, etc) like on Windows), for example:
+	search=\sdict\dict
+	cachedir=\sdict\dict
+or if you have storage card:
+	search=\Storage Card\sdict\dict
+	cachedir=\Storage Card\sdict\dict
+Then copy all files to WinCE device.
+Dont ever try to run Sdict without cache files! Create cache files
+first on PC host and only then copy to device.
+
 CONFIGURATION:
 Sdict controlled by configuration file: sdictrc. By default, it must
 be located in your home directory, but there are few ways to point

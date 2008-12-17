@@ -71,6 +71,11 @@ switch $tcl_platform(platform) {
     }
     rename ABORT ABORT_OLD
     rename ABORT_WIN ABORT
+    set wince 0
+    if { $tcl_platform(os) == "Windows CE" } {
+      package require wce
+      set wince 1
+    }
   }
 }
 
@@ -222,10 +227,15 @@ proc guisearch {} {
 }
 
 proc guihelp {} {
-  global win
+  global win wince
 
   Console -bold "Welcome to Sdict!\n"
   Console "Keys are:\n"
+  if { $wince == 1 } {
+    Console "Up/Down\thistory up/down\n"
+    Console "#\tswitch output/input\n"
+    return
+  }
   Console "^Q\t\tquit\n"
   Console "^Z\t\tclear output\n"
   Console "^H\t\tthis help\n"
@@ -302,7 +312,21 @@ if { $config(nogui) } {
 # Create GUI
 set win(root)	.
 wm title $win(root) "Sdict"
-wm geometry $win(root) 210x250
+if { $wince == 0 } {
+  set width 210
+  set height 250
+} else { 
+  # We are running under Windows CE !
+  # Adjust window size
+  set ce_size     [wm maxsize .]
+  set ce_menu     [wce menuheight]
+  set ce_caption  [wce captionheight]
+  set width       [lindex $ce_size 0]
+  set height      [expr {[lindex $ce_size 1] - $ce_menu - $ce_caption}]
+  wce inputmode $win(root) ambiguous
+  wce keyon back $win(root)
+}
+wm geometry $win(root) ${width}x${height}
 
 option add *BorderWidth 1
 option add *HighlightThickness 0
@@ -320,8 +344,11 @@ $mb.m add command -label "Help" -command guihelp
 $mb.m add command -label "Quit" -command guiquit
 $mb configure -menu $mb.m
 set win(entry) [entry $f.e -textvariable win(word)]
-pack $f.b2 $f.b1 -side right 
+pack $f.b2 $f.b1 -side right
 pack $win(entry) -side left -fill x -expand yes
+
+# Setting up application menu under Windows CE
+if { $wince == 1 } { $win(root) config -menu $mb.m }
 
 pack [set f [frame $win(root).f]] -fill both -expand yes
 set win(text) [text $f.t -font [list $config(font) $config(fontsize)]  \
@@ -332,15 +359,24 @@ pack $win(scry) -side right -fill y
 pack $win(text) -side left -fill both -expand yes
 
 # Setting up hot keys
-bind $win(root)  <Control-q> 	guiquit
+# Common bindings
 bind $win(entry) <Return> 	guisearch
-bind $win(entry) <Escape>	[list $win(entry) delete 0 end]
-bind $win(entry) <Control-z>	guiclearoutput
-bind $win(entry) <Control-h>	guihelp
-bind $win(entry) <Up>		[list rollhistory up]
+bind $win(entry) <Up>		  [list rollhistory up]
 bind $win(entry) <Down>		[list rollhistory down]
-bind $win(entry) <Next>		[list $win(text) yview scroll 1 pages]
-bind $win(entry) <Prior>	[list $win(text) yview scroll -1 pages]
+if { $wince == 0 } {
+  bind $win(root)  <Control-q> 	guiquit
+  bind $win(entry) <Escape>	[list $win(entry) delete 0 end]
+  bind $win(entry) <Control-z>	guiclearoutput
+  bind $win(entry) <Control-h>	guihelp
+  bind $win(entry) <Next>		[list $win(text) yview scroll 1 pages]
+  bind $win(entry) <Prior>	[list $win(text) yview scroll -1 pages]
+} else {
+  # Bind for Windows CE based devices
+  bind $win(text)  <F9>  [list focus -force $win(entry)]
+  bind $win(entry) <F9>  [list focus -force $win(text)]
+  bind $win(text) <Up>   [list $win(text) yview scroll -1 pages]
+  bind $win(text) <Down> [list $win(text) yview scroll 1 pages ]
+}
 
 # Setting up text styles
 $win(text) tag configure bold -font [list $config(font) $config(fontsize) bold]
@@ -357,6 +393,7 @@ if { $config(createcache) } { GenerateCache }
 
 putsWarn
 Console "Loading dictionary:\n"
+update idletasks
 foreach n [getbooks] {
   if {[catch {stardict open $n} err]} {
     Console -red "$err\n"

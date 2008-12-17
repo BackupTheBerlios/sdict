@@ -1,5 +1,5 @@
 1. (DONE) Add application menu with function of hot-keys.
-2. Port to WinCE.
+2. (PARTIALLY) Port to WinCE.
 3. Add ability to edit configuration file.
 4. Add to stardict.tcl ability to search words with wild chars.
 5. (DONE: added menu item, not hot key) Add hot key (and, 
