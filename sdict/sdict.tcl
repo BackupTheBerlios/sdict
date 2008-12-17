@@ -59,6 +59,7 @@ unset state
 
 # If no rcfile specified, depending on
 # running platform select appropriate.
+set wince 0
 switch $tcl_platform(platform) {
   unix {
     if { $config(rcfile) == "" } {
@@ -71,7 +72,6 @@ switch $tcl_platform(platform) {
     }
     rename ABORT ABORT_OLD
     rename ABORT_WIN ABORT
-    set wince 0
     if { $tcl_platform(os) == "Windows CE" } {
       package require wce
       set wince 1
@@ -135,6 +135,9 @@ proc putsWord { word {bookname {}} } {
   foreach d [lsort [array names result]] {
     Console -bold "$d: "
     Console -italic "$word\n"
+    if { [string index $result($d) end] != "\n" } {
+      append result($d) "\n"
+    }
     Console "$result($d)"
   }
   putsWarn
