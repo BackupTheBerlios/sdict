@@ -213,7 +213,9 @@ proc getbooks {} {
 
 proc showdicts {} {
   foreach n [lsort [stardict names]] { 
-    Console "$n\n" 
+    Console -bold "$n\n" 
+    array set info [stardict info -info $n]
+    foreach n [lsort [array names info]] { Console "$n: $info($n)\n" }
   }
 }
 

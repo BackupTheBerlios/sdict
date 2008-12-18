@@ -8,13 +8,17 @@ package provide stardict 0.1
 namespace eval ::stardict {
     namespace export stardict
 
+    # Keep dictionary information
+    # This two dimension array: 1 - bookname, 2 - parameter
     variable 	dict
     array set 	dict {}
     set 	dict(names) {}
 
+    # Keep words information
     variable	words
     array set	words {}
 
+    # Configuration
     variable	config
     array set	config {}
     
@@ -22,6 +26,10 @@ namespace eval ::stardict {
     variable	lasterr
     set 	lasterr {}
 
+
+    # All available ifo options 
+    set ifo_opts {version bookname wordcount idxfilesize \
+  	author email website description date sametypesequence}
 }
 
 # ::stardict::stardict --
@@ -129,10 +137,7 @@ proc ::stardict::stardict_cmd_setup {args} {
 proc ::stardict::loadifo {filename} {
   variable dict
   variable config
-
-  # All available ifo options 
-  set opts [list version bookname wordcount idxfilesize \
-  	author email website description date sametypesequence]
+  variable ifo_opts
 
   # Open file and check stardict signature
   set fd [open $filename]
@@ -151,7 +156,7 @@ proc ::stardict::loadifo {filename} {
     set pair [split $line =]
     set key  [lindex $pair 0]
     set val  [lindex $pair 1]
-    if {[lsearch -exact $opts $key] != -1} {
+    if {[lsearch -exact $ifo_opts $key] != -1} {
       set ifo($key) $val
     } else {
       close $fd
@@ -568,6 +573,7 @@ proc ::stardict::stardict_cmd_lasterr {} {
 
 proc ::stardict::stardict_cmd_info {opt bookname} {
   variable dict
+  variable ifo_opts
 
   check_bookname $bookname
   switch -exact -- $opt {
@@ -591,6 +597,16 @@ proc ::stardict::stardict_cmd_info {opt bookname} {
     }
     "-files" {
       return $dict($bookname,files)
+    }
+    "-info" {
+      set result {}
+      foreach o [lsort [array names dict "$bookname,*"]] {
+	set o [lindex [split $o ,] end]
+        if { [lsearch -exact $ifo_opts $o] != -1 } {
+	  lappend result $o $dict($bookname,$o)
+	}
+      }
+      return $result
     }
   }
 }

@@ -70,6 +70,7 @@ Result is array, where array index is bookname and item is results.
 	[opt [arg -cache]]	\
 	[opt [arg -iscached]]	\
 	[opt [arg -files]]	\
+	[opt [arg -info]]	\
 	[arg bookname]]
 
 Retrieve various information about dictionary [arg bookname].
@@ -89,6 +90,8 @@ Check is dictionary cached. Please note, that actual only if
 dictionary already open by [cmd {::stardict::stardict open}]
 [def [arg -files]]
 Return list of files related to dictionary
+[def [arg -info]]
+Return all options founded in appropriate .ifo file.
 [list_end]
 
 [para]
