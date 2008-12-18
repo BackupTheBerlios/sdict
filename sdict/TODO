@@ -15,3 +15,6 @@
 10. Implement command 'dump' to stardict package for dumping dictionary.
 11. (DONE) Add target to Makefile to create stardict package index.
 12. (DONE) Add target to Makefile generate stardict package documentation.
+13. Make limited cache (buffer) for translated words. Store in this
+cache - whole word and its offset and length in index file.
+14. Ability to save output to file.
