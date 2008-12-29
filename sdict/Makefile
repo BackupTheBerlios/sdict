@@ -57,5 +57,7 @@ uninstall:
 	$(RM) $(PKGPATH)/pkgIndex.tcl
 	$(RM) $(PKGPATH)/stardict.tcl
 	$(RM) $(LIBPATH)/sdict.tcl
-	for n in $(DOCS); do $(RM) $(DOCPATH)/$$n; done
-	$(RMDIR) $(DOCPATH) $(PKGPATH) $(LIBPATH)
+	for n in README sdictrc.sample stardict.html; do \
+		$(RM) $(DOCPATH)/$$n; \
+	done
+	$(RMDIR) $(DOCPATH) $(PKGPATH) $(LIBPATH) 
