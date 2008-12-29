@@ -89,6 +89,9 @@ fontsize (optional)
 	size of font for output text.
 	By default:
 	fontsize=10
+autoclear (optional)
+	do not append translated text to the end of output, 
+	instead cleat output.
 
 COMMAND LINE:
 -d	show dictionary names and exit

@@ -20,6 +20,7 @@ array set config {
   createcache	0
   cachequit	0
   showdicts	0
+  autoclear	0
   words		{}
   rcfile	""
   font		fixed
@@ -102,6 +103,13 @@ proc configOpen {} {
         set config(fontsize) $size
       }
       font { set config(font) [lindex $tok 1] }
+      autoclear { 
+	set val [lindex $tok end]
+	if { ![string is integer $val] } {
+	  ABORT "autoclear must be 0 or 1"
+	}
+        set config(autoclear) $val
+      }
     }
   }
   if { ![info exists config(searchdir)] } {
@@ -131,6 +139,7 @@ proc putsWarn {} {
 proc putsWord { word {bookname {}} } {
   global config
 
+  if { $config(autoclear) } { guiclearoutput }
   array set result [stardict get $word $bookname]
   foreach d [lsort [array names result]] {
     Console -bold "$d: "

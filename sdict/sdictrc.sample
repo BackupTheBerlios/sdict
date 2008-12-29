@@ -9,6 +9,10 @@ search=~/.dict
 # It must be exists.
 cachedir=~/.dict
 
+# Do not append translated text to the 
+# end of output, clear instead.
+#autoclear=1
+
 # GUI options
 # Available fonts are:
 # fixed, times, courier, helvetica
