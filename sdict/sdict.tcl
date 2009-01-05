@@ -326,6 +326,7 @@ if { $config(nogui) } {
 # Create GUI
 set win(root)	.
 wm title $win(root) "Sdict"
+wm iconname $win(root) "Sdict"
 if { $wince == 0 } {
   set width 210
   set height 250
