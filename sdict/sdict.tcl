@@ -1,8 +1,11 @@
 
-# Load StarDict package
+# Load local packages
 lappend auto_path [file dirname [info script]]
 package require stardict
+package require config
 
+# Terminate application
+# Suited for unix systems
 proc ABORT { msg } {
   global argv0
 
@@ -10,6 +13,8 @@ proc ABORT { msg } {
   exit 1
 }
 
+# Terminate application
+# Suited for Windows
 proc ABORT_WIN { msg } {
   tk_messageBox -title Error -icon error -type ok -message "$msg"
   exit 1
@@ -19,7 +24,9 @@ proc ABORT_WIN { msg } {
 # Global variables
 #########################################################
 
-array set config {
+# Command line arguments passed to application
+#array set config {
+array set clargs {
   createcache	0
   cachequit	0
   showdicts	0
@@ -29,6 +36,12 @@ array set config {
   font		fixed
   fontsize  	10
 }
+
+# Config file
+set rcfile ""
+
+# Flag signing that no need build gui
+set nogui 0
 
 array set enabled {}
 
@@ -47,27 +60,27 @@ set hisptr  0
 
 # Try get rcfile from environment variable
 if { [info exists env(SDICTRC)] } {
-  set config(rcfile) $env(SDICTRC)
+  set rcfile $env(SDICTRC)
 }
 
 # Parsing command line arguments
 set state skip
 foreach arg $argv {
   switch $state {
-    rcfile   { set config(rcfile) $arg; set state skip; continue }
-    bookname { set config(booknames) $arg; set state skip; continue }
+    rcfile   { set rcfile $arg; set state skip; continue }
+    bookname { set clargs(booknames) $arg; set state skip; continue }
   }
   switch -glob -- $arg {
     -rc     { set state rcfile      }
-    -c      { set config(createcache) 1 }
-    -cq     { set config(cachequit)   1 }
-    -d	    { set config(showdicts)   1 }
+    -c      { set clargs(createcache) 1 }
+    -cq     { set clargs(cachequit)   1 }
+    -d	    { set clargs(showdicts)   1 }
     -b	    { set state bookname	}
     default { 
       if {[string index $arg 0] == "-"} {
         ABORT "unknown argument: $arg"
       }
-      lappend config(words) $arg
+      lappend clargs(words) $arg
     }
   }
 }
@@ -78,13 +91,13 @@ unset state
 set wince 0
 switch $tcl_platform(platform) {
   unix {
-    if { $config(rcfile) == "" } {
-      set config(rcfile) [join [list $env(HOME) .sdictrc] [file separator]]
+    if { $rcfile == "" } {
+      set rcfile [join [list $env(HOME) .sdictrc] [file separator]]
     }
   }
   windows {
-    if { $config(rcfile) == "" } {
-      set config(rcfile) [join [list [file dirname [info script]] sdictrc] [file separator]]
+    if { $rcfile == "" } {
+      set $rcfile [join [list [file dirname [info script]] sdictrc] [file separator]]
     }
     rename ABORT ABORT_OLD
     rename ABORT_WIN ABORT
@@ -96,53 +109,20 @@ switch $tcl_platform(platform) {
 }
 
 ##################################################################
-proc configOpen {} {
-  global config
-  
-  set fd [open $config(rcfile)]
-  while {![eof $fd]} {
-    gets $fd line
-    set tok [split $line =]
-    switch [lindex $tok 0] {
-      search {
-        lappend config(searchdir) [lindex $tok 1]
-      }
-      cachedir {
-        set config(cachedir) [lindex $tok 1]
-      }
-      fontsize {
-        set size [lindex $tok 1]
-        if { ![string is integer $size] } {
-          ABORT "fontsize is not integer"
-        }
-        set config(fontsize) $size
-      }
-      font { set config(font) [lindex $tok 1] }
-      autoclear { 
-	set val [lindex $tok end]
-	if { ![string is integer $val] } {
-	  ABORT "autoclear must be 0 or 1"
-	}
-        set config(autoclear) $val
-      }
-    }
-  }
-  if { ![info exists config(searchdir)] } {
-    return -code error "$config(rcfile): no one 'searchdir' option"
-  }
-  if { ![info exists config(cachedir)] } {
-    return -code error "$config(rcfile): no one 'cachedir' option"
-  }
-
-  close $fd
-  eval {stardict setup -cachedir $config(cachedir) $config(searchdir)}
-}
-
 proc guiquit {} {
-  global win
+  global win enabled
+
+  stardict close
+
+  # Rewrite config on exit
+  foreach n [lsort [array names enabled]] {
+    if { ! $enabled($n) } { 
+      config set $n "no" 
+    } else { catch {config unset $n} }
+  }
+  config commit
 
   destroy $win(root)
-  stardict close
 }
 
 proc putsWarn {} {
@@ -152,14 +132,13 @@ proc putsWarn {} {
 }
 
 proc putsWord { word {bookname {}} } {
-  global config
   global enabled
 
-  if { $config(autoclear) } { guiclearoutput }
+  if { [config get autoclear 0] } { guiclearoutput }
   array set result [stardict get $word $bookname]
   foreach d [lsort [array names result]] {
     # Skip disabled dictionaries
-    if { !$enabled($d) } { continue }
+    if { [info exists enabled($d)] && !$enabled($d) } { continue }
     Console -bold "$d: "
     Console -italic "$word\n"
     if { [string index $result($d) end] != "\n" } {
@@ -171,21 +150,21 @@ proc putsWord { word {bookname {}} } {
 }
 
 proc GenerateCache {} {
-  global config win
+  global win nogui
 
-  if { ! $config(nogui) } { $win(entry) configure -state disable }
+  if { ! $nogui } { $win(entry) configure -state disable }
   foreach n [getbooks] {
     Console "Read book: $n\n"
-    if { ! $config(nogui) } { update idletasks }
+    if { ! $nogui } { update idletasks }
     if { [catch {stardict open -nocache $n} err] } {
       puts stderr $err
       continue
     }
     Console "Generating cache for book: $n\n"
-    if { ! $config(nogui) } { update idletasks }
+    if { ! $nogui } { update idletasks }
     stardict createcache $n
   }
-  if { ! $config(nogui) } { $win(entry) configure -state normal }
+  if { ! $nogui } { $win(entry) configure -state normal }
 }
 
 # Generate cache for dictionaries which have not one
@@ -204,7 +183,7 @@ proc SoftGenerateCache {} {
 }
 
 proc Console { args } {
-  global config win
+  global win nogui
 
   if { [string index [lindex $args 0] 0] == "-" } {
     set msg [lindex $args 1]
@@ -214,7 +193,7 @@ proc Console { args } {
     set style ""
   }
 
-  if { $config(nogui) } {
+  if { $nogui } {
     puts -nonewline stdout $msg
     return
   }
@@ -229,13 +208,25 @@ proc Console { args } {
 }
 
 proc getbooks {} {
-  global config
+  global clargs enabled
 
-  if { [info exists config(booknames)] } {
-    return [split $config(booknames) ,]
-  } else {
-    return [stardict names]
+  # High priority to books passed by command line
+  if { [info exists clargs(booknames)] } {
+    return [split $clargs(booknames) ,]
   }
+
+  # Get booknames except those which obviuos disabled
+  # by config file.
+  set ret {}
+  foreach n [stardict names] {
+    if { [lsearch -exact [config names] $n] == -1 } {
+      set enabled($n) 1
+      lappend ret $n
+    } else {
+      set enabled($n) 0
+    }
+  }
+  return $ret
 }
 
 proc showdicts {} {
@@ -357,33 +348,46 @@ proc rollhistory { dir } {
 
 ##################################################################
 namespace import stardict::stardict
+namespace import config::config
 
 # Select appropriate stream to output messages
-if { [llength $config(words)] || $config(showdicts) \
-	|| $config(cachequit) } {
-  set config(nogui) 1
+if { [llength $clargs(words)] || $clargs(showdicts) \
+	|| $clargs(cachequit) } {
+  set nogui 1
 } else { 
   set argv {}; # Disable further argment processing by Tk package
   package require Tk
-  set config(nogui) 0 
+  set nogui 0 
 }
 
-if {[catch {configOpen} err]} { ABORT $err }
+if { [catch {config open $rcfile} err] } { ABORT $err }
+# Check for required options
+if { [catch {config get cachedir}] } {
+  ABORT "$rcfile: no \"cachedir\" option"
+}
+if { [catch {config get search}] } {
+  ABORT "$rcfile: no \"search\" option"
+}
+# Setting up StarDict package
+if { [catch {stardict setup -cachedir [config get cachedir] \
+	[config get search]} err] } {
+  ABORT "$err"
+}
 
 # Show names of founded dictionaries and quit
-if { $config(showdicts) } { showdicts; exit 0 }
+if { $clargs(showdicts) } { showdicts; exit 0 }
 
 # Create cache and quit
-if { $config(cachequit) } { GenerateCache; exit 0 }
+if { $clargs(cachequit) } { GenerateCache; exit 0 }
 
 # Translate words from command line and quit
-if { $config(nogui) } {
+if { $nogui } {
   foreach n [getbooks] {
     if {[catch {stardict open $n} err]} {
       puts stderr $err
       continue
     }
-    foreach w $config(words) { putsWord $w $n }
+    foreach w $clargs(words) { putsWord $w $n }
     stardict close $n
   }
   exit 0
@@ -439,7 +443,8 @@ pack $win(entry) -side left -fill x -expand yes
 if { $wince == 1 } { $win(root) config -menu $mb.m }
 
 pack [set f [frame $win(root).f]] -fill both -expand yes
-set win(text) [text $f.t -font [list $config(font) $config(fontsize)]  \
+set win(text) [text $f.t -font \
+	[list [config get font "fixed"] [config get fontsize 12]]  \
 	-yscrollcommand [list $f.sy set]]
 set win(scry) [scrollbar $f.sy -takefocus 0 \
 	-command [list $win(text) yview]]
@@ -467,8 +472,10 @@ if { $wince == 0 } {
 }
 
 # Setting up text styles
-$win(text) tag configure bold -font [list $config(font) $config(fontsize) bold]
-$win(text) tag configure italic -font [list $config(font) $config(fontsize) italic]
+$win(text) tag configure bold -font \
+	[list [config get font "fixed"] [config get fontsize 12] bold]
+$win(text) tag configure italic -font \
+	[list [config get font "fixed"] [config get fontsize 12] italic]
 $win(text) tag configure darkblue -foreground darkblue
 $win(text) tag configure red -foreground red
 
@@ -477,7 +484,7 @@ $win(text) configure -state disabled
 tkwait visibility $win(text)
 update idletasks
 
-if { $config(createcache) } { GenerateCache }
+if { $clargs(createcache) } { GenerateCache }
 
 putsWarn
 Console "Loading dictionary:\n"
