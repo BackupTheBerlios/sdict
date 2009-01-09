@@ -432,7 +432,6 @@ proc ::stardict::stardict_cmd_close { {booknames {}} } {
     set booknames [stardict names]
   }
   foreach b $booknames {
-    array unset dict "$b,*"
     array unset words "$b,*"
   }
 }
