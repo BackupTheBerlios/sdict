@@ -15,7 +15,10 @@ proc ABORT_WIN { msg } {
   exit 1
 }
 
+#########################################################
 # Global variables
+#########################################################
+
 array set config {
   createcache	0
   cachequit	0
@@ -26,9 +29,21 @@ array set config {
   font		fixed
   fontsize  	10
 }
+
+array set enabled {}
+
+# GUI widgets
 array set win {}
+
+# List of entered words
 set history {}
+
+# How much words in history
 set hisptr  0
+
+#########################################################
+# End of global variables
+#########################################################
 
 # Try get rcfile from environment variable
 if { [info exists env(SDICTRC)] } {
@@ -138,10 +153,13 @@ proc putsWarn {} {
 
 proc putsWord { word {bookname {}} } {
   global config
+  global enabled
 
   if { $config(autoclear) } { guiclearoutput }
   array set result [stardict get $word $bookname]
   foreach d [lsort [array names result]] {
+    # Skip disabled dictionaries
+    if { !$enabled($d) } { continue }
     Console -bold "$d: "
     Console -italic "$word\n"
     if { [string index $result($d) end] != "\n" } {
@@ -221,6 +239,7 @@ proc getbooks {} {
 }
 
 proc showdicts {} {
+  Console -bold "All available dicts:\n"
   foreach n [lsort [stardict names]] { 
     Console -bold "$n\n" 
     array set info [stardict info -info $n]
@@ -278,13 +297,38 @@ proc saveoutput {parent} {
   if { $file == "" } { return }
 
   if { [catch {set fd [open $file w]} err] } {
-    Console -red "$file: $err"
+    Console -red "$file: $err\n"
     return
   }
 
   # Save output
   puts $fd [$win(text) get 0.0 end]
   close $fd
+}
+
+# Load/Unload dict from menu 'D'
+proc dictOnOff {dict} {
+  global enabled
+
+  if { !$enabled($dict) } {
+    Console -darkblue "Unload: $dict\n"
+    stardict close $dict
+  } else {
+    Console -darkblue "$dict\n"
+    stardict open $dict
+  }
+}
+
+proc populateMenuD {wmenu} {
+  global enabled
+
+  foreach d [lsort [stardict names]] {
+    if { ![info exists enabled($d)] } {
+      set enabled($d) 1
+    }
+    $wmenu add check -label $d -variable enabled($d) \
+    	-command [list dictOnOff $d]
+  }
 }
 
 proc rollhistory { dir } {
@@ -371,18 +415,24 @@ option add *HighlightThickness 0
 # Setting up input field and two buttons: for translate and menu
 pack [set f [frame $win(root).top]] -fill x -side top
 button $f.b1 -text "<" -padx 1 -pady 1 -command guisearch
-set mb [menubutton $f.b2 -text "M" -direction below -relief raised \
+set mbD [menubutton $f.b3 -text "D" -direction below -relief raised \
 	-underline 0 -padx 2 -pady 2]
-menu $mb.m -tearoff 0
-$mb.m add command -label "Dictionaries" -command showdicts
-$mb.m add command -label "Clear output" -command guiclearoutput
-$mb.m add command -label "Save output" -command [list saveoutput $win(root)]
-$mb.m add command -label "Cache dict" -command SoftGenerateCache
-$mb.m add command -label "Help" -command guihelp
-$mb.m add command -label "Quit" -command guiquit
-$mb configure -menu $mb.m
+set mbM [menubutton $f.b2 -text "M" -direction below -relief raised \
+	-underline 0 -padx 2 -pady 2]
+# Menu for button 'M'
+menu $mbM.m -tearoff 0
+$mbM.m add command -label "Dictionaries" -command showdicts
+$mbM.m add command -label "Clear output" -command guiclearoutput
+$mbM.m add command -label "Save output" -command [list saveoutput $win(root)]
+$mbM.m add command -label "Cache dict" -command SoftGenerateCache
+$mbM.m add command -label "Help" -command guihelp
+$mbM.m add command -label "Quit" -command guiquit
+$mbM configure -menu $mbM.m
+# Menu for button 'D'
+menu $mbD.m -tearoff 1
+$mbD configure -menu $mbD.m
 set win(entry) [entry $f.e -textvariable win(word)]
-pack $f.b2 $f.b1 -side right
+pack $mbM $mbD $f.b1 -side right
 pack $win(entry) -side left -fill x -expand yes
 
 # Setting up application menu under Windows CE
@@ -433,10 +483,12 @@ putsWarn
 Console "Loading dictionary:\n"
 update idletasks
 foreach n [getbooks] {
+  if { [info exists enabled($n)] && !$enabled($n) } { continue }
   if {[catch {stardict open $n} err]} {
     Console -red "$err\n"
   } else { Console -darkblue "$n\n" }
   update idletasks
 }
 
+populateMenuD $mbD.m
 guihelp
