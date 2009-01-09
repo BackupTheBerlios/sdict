@@ -4,7 +4,7 @@
 4. Add to stardict.tcl ability to search words with wild chars.
 5. (DONE: added menu item, not hot key) Add hot key (and, 
    later, menu item, see 1) to view info about loaded dictionaries.
-6. Add select/deselect on fly dictionaries on which perform
+6. (DONE) Add select/deselect on fly dictionaries on which perform
    word search. For example, if you have many loaded dictionaries
    and you want search word in only few dicts, not all.
 7. Add to stardict.tcl ability to create directory for cache files.
@@ -17,4 +17,4 @@
 12. (DONE) Add target to Makefile generate stardict package documentation.
 13. Make limited cache (buffer) for translated words. Store in this
 cache - whole word and its offset and length in index file.
-14. Ability to save output to file.
+14. (DONE) Ability to save output to file.
