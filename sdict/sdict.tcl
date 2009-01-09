@@ -265,6 +265,28 @@ proc guiclearoutput {} {
   $win(text) configure -state disabled
 }
 
+proc saveoutput {parent} {
+  global win
+
+  # Prepare file dialog
+  set types {
+  	{"Text files"	{.txt}}
+	{"All files"	*}
+  }
+  set file [tk_getSaveFile -filetypes $types -parent $parent \
+  	-initialfile output -defaultextension .txt]
+  if { $file == "" } { return }
+
+  if { [catch {set fd [open $file w]} err] } {
+    Console -red "$file: $err"
+    return
+  }
+
+  # Save output
+  puts $fd [$win(text) get 0.0 end]
+  close $fd
+}
+
 proc rollhistory { dir } {
   global win history hisptr
 
@@ -350,10 +372,11 @@ option add *HighlightThickness 0
 pack [set f [frame $win(root).top]] -fill x -side top
 button $f.b1 -text "<" -padx 1 -pady 1 -command guisearch
 set mb [menubutton $f.b2 -text "M" -direction below -relief raised \
-	-padx 2 -pady 2]
+	-underline 0 -padx 2 -pady 2]
 menu $mb.m -tearoff 0
 $mb.m add command -label "Dictionaries" -command showdicts
 $mb.m add command -label "Clear output" -command guiclearoutput
+$mb.m add command -label "Save output" -command [list saveoutput $win(root)]
 $mb.m add command -label "Cache dict" -command SoftGenerateCache
 $mb.m add command -label "Help" -command guihelp
 $mb.m add command -label "Quit" -command guiquit
