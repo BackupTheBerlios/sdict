@@ -38,8 +38,8 @@ Also, if you need, fetch dictionaries from StarDict page and unpack
 it to somewhere (for example, C:\DictCache).
 Unpack Sdict source archive to (for example, C:\Sdict) and rename
 sdictrc.sample to sdictrc, then edit sdictrc such as:
-	search=C:\DictCache
-	cachedir=C:\DictCache
+	search C:\DictCache
+	cachedir C:\DictCache
 Next, open command line session, cd to C:\Sdict and type:
 	C:\Sdict> tclsh sdict.tcl -cq
 After, successful generating cache files, you may launch Sdict by
@@ -52,11 +52,11 @@ Tcl/Tk distribution (www.evolane.com).
 Unpack on PC host sdict archive and edit sdictrc to suit path
 directories relatively to WinCE device (please note, on WinCE no
 volumes (C:\, D:\, etc) like on Windows), for example:
-	search=\sdict\dict
-	cachedir=\sdict\dict
+	search \sdict\dict
+	cachedir \sdict\dict
 or if you have storage card:
-	search=\Storage Card\sdict\dict
-	cachedir=\Storage Card\sdict\dict
+	search \Storage Card\sdict\dict
+	cachedir \Storage Card\sdict\dict
 Then copy all files to WinCE device.
 Dont ever try to run Sdict without cache files! Create cache files
 first on PC host and only then copy to device.
@@ -67,28 +67,29 @@ be located in your home directory, but there are few ways to point
 another locate configuration:
 1. By environment variable SDICTRC
 2. By command line option -rc
+WARNING! Configuration file on every time on exit is overwrited!
 Configuration options founded in sdictrc:
 search 	(required)
 	point to directory where search dictionaries, your may
 	define as many directories as you want in search options.
 	By default:
-	search=/usr/share/dict
-	search=/usr/local/share/dict
-	search=~/.dict
+	search /usr/share/dict
+	search /usr/local/share/dict
+	search ~/.dict
 
 cachedir (required)
 	point to directory where located cache files, it directory
 	must be exists, create one yourself if it not exists.
 	By default:
-	cachedir=~/.dict
+	cachedir ~/.dict
 font	(optional)
 	use font for output text.
 	By default:
-	font=fixed
+	font fixed
 fontsize (optional)
 	size of font for output text.
 	By default:
-	fontsize=10
+	fontsize 10
 autoclear (optional)
 	do not append translated text to the end of output, 
 	instead cleat output.

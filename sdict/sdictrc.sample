@@ -1,20 +1,20 @@
 # sdictrc configuration file for Sdict
 
 # Directories in which search dictionaries
-search=/usr/share/dict
-search=/usr/local/share/dict
-search=~/.dict
+search /usr/share/dict
+search /usr/local/share/dict
+search ~/.dict
 
 # Cache directory store dictionary cache.
 # It must be exists.
-cachedir=~/.dict
+cachedir ~/.dict
 
 # Do not append translated text to the 
 # end of output, clear instead.
-#autoclear=1
+#autoclear 1
 
 # GUI options
 # Available fonts are:
 # fixed, times, courier, helvetica
-#font=fixed
-#fontsize=10
+#font fixed
+#fontsize 10
