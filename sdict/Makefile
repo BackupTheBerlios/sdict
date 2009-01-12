@@ -32,13 +32,14 @@ check-tcl:
 
 # Generate pkgIndex file and package doc in html format
 tcl-pkg: check-tcl
-	( cd lib && echo "pkg_mkIndex . stardict.tcl" | $(TCLSH) )
+	( cd lib && echo "pkg_mkIndex . config.tcl stardict.tcl" | $(TCLSH) )
 	dtplite -o doc html lib/stardict.man
 
 install-bin:
 	$(INSTALL) -d $(LIBPATH)/lib
 	$(INSTALL_DATA) lib/pkgIndex.tcl $(PKGPATH)
 	$(INSTALL_DATA) lib/stardict.tcl $(PKGPATH)
+	$(INSTALL_DATA) lib/config.tcl   $(PKGPATH)
 	$(INSTALL_DATA) sdict.tcl $(LIBPATH)
 	$(INSTALL_PRG) -m 755 sdict $(BINPATH)
 
@@ -56,6 +57,7 @@ uninstall:
 	$(RM) $(BINPATH)/$(APPNAME)
 	$(RM) $(PKGPATH)/pkgIndex.tcl
 	$(RM) $(PKGPATH)/stardict.tcl
+	$(RM) $(PKGPATH)/config.tcl
 	$(RM) $(LIBPATH)/sdict.tcl
 	for n in README sdictrc.sample stardict.html; do \
 		$(RM) $(DOCPATH)/$$n; \
