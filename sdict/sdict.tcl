@@ -97,7 +97,7 @@ switch $tcl_platform(platform) {
   }
   windows {
     if { $rcfile == "" } {
-      set $rcfile [join [list [file dirname [info script]] sdictrc] [file separator]]
+      set rcfile [join [list [file dirname [info script]] sdictrc] [file separator]]
     }
     rename ABORT ABORT_OLD
     rename ABORT_WIN ABORT
@@ -368,9 +368,18 @@ if { [catch {config get cachedir}] } {
 if { [catch {config get search}] } {
   ABORT "$rcfile: no \"search\" option"
 }
+
+# Why this need? 
+# On Unix systems all ok, but Windows is another matter. On Windows path
+# separator is \ and Tcl treat this as control sequence and thus add additional
+# level to list. For example, string "d:\work\dict" converted to list
+# will be {d:\work\dict}. Arguments passed to setup -cachedir is string, but 
+# last argument must be list. Thus, we need remove additional list level from
+# cachedir value with 'join' command.
+set search [config get search]
+set cachedir [join [config get cachedir]]
 # Setting up StarDict package
-if { [catch {stardict setup -cachedir [config get cachedir] \
-	[config get search]} err] } {
+if { [catch {stardict setup -cachedir $cachedir $search} err] } {
   ABORT "$err"
 }
 
@@ -439,9 +448,7 @@ set win(entry) [entry $f.e -textvariable win(word)]
 pack $mbM $mbD $f.b1 -side right
 pack $win(entry) -side left -fill x -expand yes
 
-# Setting up application menu under Windows CE
-if { $wince == 1 } { $win(root) config -menu $mb.m }
-
+# Create output
 pack [set f [frame $win(root).f]] -fill both -expand yes
 set win(text) [text $f.t -font \
 	[list [config get font "fixed"] [config get fontsize 12]]  \
@@ -450,6 +457,13 @@ set win(scry) [scrollbar $f.sy -takefocus 0 \
 	-command [list $win(text) yview]]
 pack $win(scry) -side right -fill y
 pack $win(text) -side left -fill both -expand yes
+
+# Setting up application menu under Windows CE
+if { $wince == 1 } {
+  $mbM.m insert 0 command -label "To entry" -command [list focus -force $win(entry)]
+  $mbM.m insert 1 command -label "To output" -command [list focus -force $win(text)]
+  $win(root) config -menu $mbM.m 
+}
 
 # Setting up hot keys
 # Common bindings
@@ -469,6 +483,18 @@ if { $wince == 0 } {
   bind $win(entry) <F9>  [list focus -force $win(text)]
   bind $win(text) <Up>   [list $win(text) yview scroll -1 pages]
   bind $win(text) <Down> [list $win(text) yview scroll 1 pages ]
+}
+
+# This ugly hack for handle hotkeys to invoke menu
+# in menubuttons 'D' and 'M' under Windows.
+# Tested on ActiveTcl 8.14.4.0 
+if { $tcl_platform(platform) == "windows" } {
+  proc winMenu {w} {
+    tk::MbPost $w
+    tk::MenuFirstEntry [$w cget -menu]
+  }
+  bind $win(root) <Alt-m> [list winMenu $mbM]
+  bind $win(root) <Alt-d> [list winMenu $mbD]
 }
 
 # Setting up text styles
