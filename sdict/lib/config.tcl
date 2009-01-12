@@ -121,7 +121,7 @@ proc ::config::config_cmd_open {args} {
 	continue
       }
     }
-    lappend option($opt) [lrange $tok 1 end]
+    lappend option($opt) [join [lrange $tok 1 end]]
   }
 
   close $fd
