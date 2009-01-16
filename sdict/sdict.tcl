@@ -135,7 +135,7 @@ proc putsWord { word {bookname {}} } {
   global enabled
 
   if { [config get autoclear 0] } { guiclearoutput }
-  array set result [stardict get $word $bookname]
+  array set result [stardict get [string tolower $word] $bookname]
   foreach d [lsort [array names result]] {
     # Skip disabled dictionaries
     if { [info exists enabled($d)] && !$enabled($d) } { continue }
