@@ -524,4 +524,7 @@ foreach n [getbooks] {
 }
 
 populateMenuD $mbD.m
+
+# Finally, add handler to close window by window manager
+wm protocol $win(root) WM_DELETE_WINDOW guiquit
 guihelp
