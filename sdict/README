@@ -15,6 +15,9 @@ On Unix:
 First, check out that Tcl/Tk installed on your system: just type tclsh
 on command prompt. If you put to Tcl shell with prompt sign %, when
 type: info tclversion and check installed Tcl version.
+In case of various Tcl versions installed you need to manual edit
+Makefile and to customize TCLSH variable to point proper tclsh binary,
+not full path!
 Next, unpack sdict sources and cd to:
 	$ tar -zxf sdict-0.1.tar.gz
 	$ cd sdict-0.1
