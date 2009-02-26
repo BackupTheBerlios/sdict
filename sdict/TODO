@@ -18,7 +18,7 @@
 13. Make limited cache (buffer) for translated words. Store in this
 cache - whole word and its offset and length in index file.
 14. (DONE) Ability to save output to file.
-15. Fix closing application by window manager. Configuration file is
+15. (DONE) Fix closing application by window manager. Configuration file is
    not saving.
 16. Add dictd protocol support.
 17. Make search inside results output.
