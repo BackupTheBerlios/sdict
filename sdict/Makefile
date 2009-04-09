@@ -1,3 +1,11 @@
+# BE AWARE!!!
+# -----------
+# To suit to your requirements adjust PREFIX to locate another
+# install directory and TCLSH in case if you have several
+# Tcl/Tk distributions.
+# Also note, to generate doc by 'make tcl-pkg' you need to
+# install tcllib package
+
 VERSION=0.1
 APPNAME=sdict
 PREFIX=/usr/local
