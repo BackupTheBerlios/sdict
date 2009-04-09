@@ -1,0 +1,186 @@
+
+<html><head>
+<title>stardict - Interface to StarDict dictionary </title>
+</head>
+<! -- Generated from file 'lib/stardict.man' by tcllib/doctools with format 'html'
+   -->
+<! -- Copyright &copy; 2008, Skorobogatko Oleksiy &lt;skorobogatko@meta.ua&gt;
+   -->
+<! -- CVS: $Id: stardict.html,v 1.1 2009/04/09 07:35:27 skoro Exp $ stardict.n
+   -->
+
+<body>
+<h1> stardict(n) 0.1 stardict &quot;Interface to StarDict dictionary&quot;</h1>
+<h2><a name="name">NAME</a></h2>
+<p>
+<p> stardict - Implementation of query StarDict dictionary
+
+
+
+
+<h2><a name="table_of_contents">TABLE OF CONTENTS</a></h2>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#table_of_contents">TABLE OF CONTENTS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#synopsis">SYNOPSIS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#description">DESCRIPTION</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#commands">COMMANDS</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#limitation_and_performance">LIMITATION AND PERFORMANCE</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#examples">EXAMPLES</a><br>
+&nbsp;&nbsp;&nbsp;&nbsp;<a href="#copyright">COPYRIGHT</a><br>
+<h2><a name="synopsis">SYNOPSIS</a></h2>
+<p>
+package require <b>Tcl 8.4</b><br>
+<br><table border=1 width=100% cellspacing=0 cellpadding=0><tr            bgcolor=lightyellow><td bgcolor=lightyellow><table 0 width=100% cellspacing=0 cellpadding=0><tr valign=top ><td ><a href="#1"><b class='cmd'>::stardict::stardict setup</b> ?-cachedir <i class='arg'>dir</i>? <i class='arg'>arg</i></a></td></tr>
+<tr valign=top ><td ><a href="#2"><b class='cmd'>::stardict::stardict names</b> </a></td></tr>
+<tr valign=top ><td ><a href="#3"><b class='cmd'>::stardict::stardict open</b> ?-usecache? ?-nocache? <i class='arg'>bookname</i></a></td></tr>
+<tr valign=top ><td ><a href="#4"><b class='cmd'>::stardict::stardict createcache</b> <i class='arg'>bookname</i></a></td></tr>
+<tr valign=top ><td ><a href="#5"><b class='cmd'>::stardict::stardict close</b> ?<i class='arg'>booknames</i>?</a></td></tr>
+<tr valign=top ><td ><a href="#6"><b class='cmd'>::stardict::stardict get</b> <i class='arg'>data</i> ?<i class='arg'>booknames</i>?</a></td></tr>
+<tr valign=top ><td ><a href="#7"><b class='cmd'>::stardict::stardict info</b> ?<i class='arg'>-isload</i>? ?<i class='arg'>-ifo</i>? ?<i class='arg'>-idx</i>? ?<i class='arg'>-dict</i>? ?<i class='arg'>-cache</i>? ?<i class='arg'>-iscached</i>? ?<i class='arg'>-files</i>? ?<i class='arg'>-info</i>? <i class='arg'>bookname</i></a></td></tr>
+<tr valign=top ><td ><a href="#8"><b class='cmd'>::stardict::stardict lasterr</b> </a></td></tr>
+</table></td></tr></table>
+<h2><a name="description">DESCRIPTION</a></h2>
+<p>
+<p>
+
+This is an implementation in pure Tcl interface to query
+StarDict dictionary.
+
+<h2><a name="commands">COMMANDS</a></h2>
+<p>
+
+<dl>
+
+<dt><a name="1"><b class='cmd'>::stardict::stardict setup</b> ?-cachedir <i class='arg'>dir</i>? <i class='arg'>arg</i></a><dd>
+
+
+Given command do search dictionaries in directories passed
+by list <i class='arg'>arg</i>. Each directory in list <i class='arg'>arg</i> scanning for
+StarDict .ifo (dictionary information) files and load them. 
+If no ifo files found or not valid format, then error generated. 
+Option ?-cachedir <i class='arg'>dir</i>? specify
+directory which keep cache files produced by 
+<b class='cmd'>::stardict::stardict createcache</b>. Be aware, it directory
+must exists.
+<br><br>
+This command must be first.
+
+<br><br>
+<dt><a name="2"><b class='cmd'>::stardict::stardict names</b> </a><dd>
+
+
+Return list of dictionary booknames. Bookname(s) supplied as
+arguments to other commands.
+
+<br><br>
+<dt><a name="3"><b class='cmd'>::stardict::stardict open</b> ?-usecache? ?-nocache? <i class='arg'>bookname</i></a><dd>
+
+
+Load dictionary words index. Option ?-usecache? load cache
+(if it exists or been created by 
+<b class='cmd'>::stardict::stardict createcache</b> before) rather than original
+StarDict dictionary index. This behaviour by default, because it
+provide load speed improvement. Against, ?-nocache? totally
+skip dictionary cache and load StarDict dictionary index (very
+slow, be aware). 
+
+<br><br>
+<dt><a name="4"><b class='cmd'>::stardict::stardict createcache</b> <i class='arg'>bookname</i></a><dd>
+
+
+Build words cache. Delete old one and create new. Keep results
+in cache directory. Argument <i class='arg'>bookname</i> is name of dictionary.
+
+<br><br>
+<dt><a name="5"><b class='cmd'>::stardict::stardict close</b> ?<i class='arg'>booknames</i>?</a><dd>
+
+Close dictionary. Argument <i class='arg'>booknames</i> is list or name of
+dictionary. This argument is optional in this case all dictionary
+would be close.
+
+<br><br>
+<dt><a name="6"><b class='cmd'>::stardict::stardict get</b> <i class='arg'>data</i> ?<i class='arg'>booknames</i>?</a><dd>
+
+
+Get word <i class='arg'>data</i> from dictionary <i class='arg'>booknames</i>. <i class='arg'>booknames</i>
+list or name of dictionary. If no <i class='arg'>booknames</i> then word
+<i class='arg'>data</i> searches in all loaded dictionaries.
+Result is array, where array index is bookname and item is results.
+
+<br><br>
+<dt><a name="7"><b class='cmd'>::stardict::stardict info</b> ?<i class='arg'>-isload</i>? ?<i class='arg'>-ifo</i>? ?<i class='arg'>-idx</i>? ?<i class='arg'>-dict</i>? ?<i class='arg'>-cache</i>? ?<i class='arg'>-iscached</i>? ?<i class='arg'>-files</i>? ?<i class='arg'>-info</i>? <i class='arg'>bookname</i></a><dd>
+
+
+Retrieve various information about dictionary <i class='arg'>bookname</i>.
+<br><br>
+<dl>
+<dt><i class='arg'>-isload</i><dd>
+Check is dictionary loaded
+<br><br>
+<dt><i class='arg'>-ifo</i><dd>
+Return name of dictionary information .ifo file
+<br><br>
+<dt><i class='arg'>-idx</i><dd>
+Return name of dictionary index .idx file
+<br><br>
+<dt><i class='arg'>-dict</i><dd>
+Return name of dictionary data .dict file
+<br><br>
+<dt><i class='arg'>-cache</i><dd>
+Return name of dictionary cache
+<br><br>
+<dt><i class='arg'>-iscached</i><dd>
+Check is dictionary cached. Please note, that actual only if
+dictionary already open by <b class='cmd'>::stardict::stardict open</b>
+<br><br>
+<dt><i class='arg'>-files</i><dd>
+Return list of files related to dictionary
+<br><br>
+<dt><i class='arg'>-info</i><dd>
+Return all options founded in appropriate .ifo file.
+</dl>
+
+<br><br>
+<dt><a name="8"><b class='cmd'>::stardict::stardict lasterr</b> </a><dd>
+
+
+Return warning message of last executed procedures: 
+<b class='cmd'>::stardict::stardict setup</b>, <b class='cmd'>::stardict::stardict get</b>.
+Be sure, <b class='cmd'>::stardict::stardict get</b> return list of 
+messages, not a message string.
+
+</dl>
+
+<h2><a name="limitation_and_performance">LIMITATION AND PERFORMANCE</a></h2>
+<p>
+Please note, support only dictionaries with version number 2.4.2
+and sametypesquence=m. For checking this, see appropriate .ifo
+file. Also, not yet support for compressed dictionary, you need
+before unpack all dictionary files (.idx and .dict) by <b class='cmd'>gunzip</b>.
+<p>
+Strongly recommended use cache files. By default,
+<b class='cmd'>::stardict::stardict open</b> reading cache rather than index.
+To build caches, open dictionary by above command and create cache
+with <b class='cmd'>::stardict::stardict createcache</b>. Reading plain index
+file is VERY-VERY slow, be aware! Cache files not portable between
+OSes, for each OS you need build particular cache.
+
+<h2><a name="examples">EXAMPLES</a></h2>
+<p>
+<p><table><tr><td bgcolor=black>&nbsp;</td><td><pre class='sample'>
+	package require stardict
+	namespace import stardict::stardict
+
+	stardict setup -cachedir /var/cache/dict  {/usr/share/dict /usr/local/dict /usr/local/stardict}
+
+	set n [stardict names]
+
+	stardict open [lindex $n 0]
+	puts [stardict get bla-bla-bla]
+
+	stardict close
+</pre></td></tr></table></p>
+
+<h2><a name="copyright">COPYRIGHT</a></h2>
+<p>
+Copyright &copy; 2008, Skorobogatko Oleksiy &lt;skorobogatko@meta.ua&gt;<br>
+</body></html>
