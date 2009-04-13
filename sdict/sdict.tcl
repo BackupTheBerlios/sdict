@@ -64,6 +64,17 @@ if { [info exists env(SDICTRC)] } {
 }
 
 # Parsing command line arguments
+if {[llength $argv]} {
+  if {[string equal [lindex $argv 0] "-h"]} {
+    puts "Usage: $argv0 \[OPTIONS\] \[WORD\] ..."
+    puts "  -rc <conf>  run with specified config file"
+    puts "  -c          create dictionary caches on start"
+    puts "  -cq         create dictionary caches and exit"
+    puts "  -d          show available dictionaries and exit"
+    puts "  -b <dict>   using only specified dictionary"
+    exit 0
+  }
+}
 set state skip
 foreach arg $argv {
   switch $state {
@@ -231,10 +242,19 @@ proc getbooks {} {
 
 proc showdicts {} {
   Console -bold "All available dicts:\n"
+  set conf [config names]
   foreach n [lsort [stardict names]] { 
     Console -bold "$n\n" 
+    set status "enable"
+    if {[lsearch $conf $n] != -1} { set status "disable" }
     array set info [stardict info -info $n]
-    foreach n [lsort [array names info]] { Console "$n: $info($n)\n" }
+    foreach n [lsort [array names info]] { 
+      if {[string equal $n "bookname"]} {
+        Console "$n: $info($n) $status\n"
+      } else {
+        Console "$n: $info($n)\n" 
+      }
+    }
   }
 }
 
