@@ -22,3 +22,4 @@ cache - whole word and its offset and length in index file.
    not saving.
 16. Add dictd protocol support.
 17. Make search inside results output.
+18. Remember size and position of main window.
